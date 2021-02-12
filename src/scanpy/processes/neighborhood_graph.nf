@@ -78,7 +78,7 @@ class SC__SCANPY__NEIGHBORHOOD_GRAPH_PARAMS {
 
 process SC__SCANPY__NEIGHBORHOOD_GRAPH {
 
-  	container params.sc.scanpy.container
+  	container params.getToolParams("scanpy").container
     label 'compute_resources__mem'
 
   	input:
@@ -99,7 +99,7 @@ process SC__SCANPY__NEIGHBORHOOD_GRAPH {
         def sampleParams = params.parseConfig(
 			sampleId,
 			params.global,
-			params.sc.scanpy.neighborhood_graph
+			params.getToolParams("scanpy").neighborhood_graph
 		)
 		processParams = sampleParams.local
         // In parameter exploration mode, file output needs to be tagged with a unique identitifer because of:
