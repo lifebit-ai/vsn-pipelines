@@ -79,14 +79,6 @@ workflow mnncorrect {
 
 }
 
-def getHarmonyBatchVariables = { params ->
-    batchVariables = params.tools.harmony.varsUse
-    if(batchVariables.size() > 1) {
-        throw new Exception("Currently it is not supported to run with multiple batch variables.")
-    }
-    return batchVariables
-}
-
 // run multi-sample with bbknn, output a scope loom file
 workflow harmony {
 
@@ -98,8 +90,8 @@ workflow harmony {
         PUBLISH as PUBLISH_SCANPY;
     } from "./src/utils/workflows/utils" params(params)
 
-    batchVariables = getHarmonyBatchVariables(params)
-    outputSuffix = params.utils?.publish?.annotateWithBatchVariableName ? "HARMONY" + "_BY_" + batchVariables[0].toUpperCase() : "HARMONY"
+    batchVariables = params.sc.harmony.varsUse
+    outputSuffix = params.utils?.publish?.annotateWithBatchVariableName ? "HARMONY" + "_BY_" + batchVariables.join("_").toUpperCase() : "HARMONY"
 
     getDataChannel | HARMONY
 
