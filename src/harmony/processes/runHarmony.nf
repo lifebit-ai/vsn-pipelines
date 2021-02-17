@@ -4,7 +4,7 @@ binDir = !params.containsKey("test") ? "${workflow.projectDir}/src/harmony/bin/"
 
 process SC__HARMONY__HARMONY_MATRIX {
     
-    container params.sc.harmony.container
+    container params.tools.harmony.container
     publishDir "${params.global.outdir}/data/intermediate", mode: 'symlink'
     label 'compute_resources__default'
 
@@ -15,7 +15,7 @@ process SC__HARMONY__HARMONY_MATRIX {
         tuple val(sampleId), path("${sampleId}.SC__HARMONY__HARMONY_MATRIX.tsv")
 
     script:
-        def sampleParams = params.parseConfig(sampleId, params.global, params.sc.harmony)
+        def sampleParams = params.parseConfig(sampleId, params.global, params.tools.harmony)
 		processParams = sampleParams.local
         varsUseAsArguments = processParams.varsUse.collect({ '--vars-use' + ' ' + it }).join(' ')
         """
