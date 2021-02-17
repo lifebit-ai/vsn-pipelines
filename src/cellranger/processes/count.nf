@@ -4,7 +4,7 @@ include {
     isParamNull;
 } from './../../utils/processes/utils.nf' params(params)
 
-toolParams = params.getToolParams("cellranger")
+toolParams = params.tools.cellranger
 
 
 def generateCellRangerCountCommandDefaults = {
@@ -102,7 +102,7 @@ process SC__CELLRANGER__COUNT {
 	  	def sampleParams = params.parseConfig(sampleId, params.global, toolParams.count)
 		processParams = sampleParams.local
 		if(processParams.sample == '') {
-			throw new Exception("Regards params.getToolParams("cellranger").count: sample parameter cannot be empty")
+			throw new Exception("Regards params.tools.cellranger.count: sample parameter cannot be empty")
 		}
 		// Check if the current sample has multiple sequencing runs
 		fastqs = fastqs instanceof List ? fastqs.join(',') : fastqs
@@ -141,7 +141,7 @@ process SC__CELLRANGER__COUNT_WITH_LIBRARIES {
 		processParams = sampleParams.local
 
 		if(processParams.sample == '') {
-			throw new Exception("Regards params.getToolParams("cellranger").count: sample parameter cannot be empty")
+			throw new Exception("Regards params.tools.cellranger.count: sample parameter cannot be empty")
 		}
 
 		// We need to create the libraries.csv file here because it needs absolute paths

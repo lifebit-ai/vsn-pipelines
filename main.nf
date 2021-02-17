@@ -90,7 +90,7 @@ workflow harmony {
         PUBLISH as PUBLISH_SCANPY;
     } from "./src/utils/workflows/utils" params(params)
 
-    batchVariables = params.sc.harmony.varsUse
+    batchVariables = params.tools.harmony.varsUse
     outputSuffix = params.utils?.publish?.annotateWithBatchVariableName ? "HARMONY" + "_BY_" + batchVariables.join("_").toUpperCase() : "HARMONY"
 
     getDataChannel | HARMONY
@@ -478,7 +478,7 @@ workflow single_sample_decontx {
     if(params.utils?.publish) {
         PUBLISH(
             SC__H5AD_TO_LOOM.out,
-            "SINGLE_SAMPLE_CELDA_DECONTX_"+ params.getToolParams("celda").decontx.strategy.toUpperCase(),
+            "SINGLE_SAMPLE_CELDA_DECONTX_"+ params.tools.celda.decontx.strategy.toUpperCase(),
             "loom",
             null,
             false
@@ -554,7 +554,7 @@ workflow single_sample_decontx_scrublet {
         // - potential doublets removed by Scrublet 
         PUBLISH_CELDA_DECONTX_SCRUBLET(
             SCRUBLET__DOUBLET_REMOVAL.out.data_doublets_removed,
-            "CELDA_DECONTX_"+ params.getToolParams("celda").decontx.strategy.toUpperCase() +"_SCRUBLET",
+            "CELDA_DECONTX_"+ params.tools.celda.decontx.strategy.toUpperCase() +"_SCRUBLET",
             "h5ad",
             null,
             false
@@ -732,7 +732,7 @@ workflow scenic {
     } from "./src/utils/workflows/utils" params(params)
 
     SCENIC( 
-        Channel.of( tuple(params.global.project_name, file(params.getToolParams("scenic").filteredLoom))) 
+        Channel.of( tuple(params.global.project_name, file(params.tools.scenic.filteredLoom))) 
     )
 
     if(params.utils?.publish) {
@@ -756,9 +756,9 @@ workflow cellranger {
     } from './src/cellranger/main' params(params)
 
     CELLRANGER(
-        file(params.getToolParams("cellranger").mkfastq.csv),
-        file(params.getToolParams("cellranger").mkfastq.runFolder),
-        file(params.getToolParams("cellranger").count.transcriptome)
+        file(params.tools.cellranger.mkfastq.csv),
+        file(params.tools.cellranger.mkfastq.runFolder),
+        file(params.tools.cellranger.count.transcriptome)
     )
 
     emit:
@@ -772,10 +772,10 @@ workflow cellranger_libraries {
     } from './src/cellranger/workflows/cellranger_libraries' params(params)
 
     CELLRANGER_LIBRARIES(
-        file(params.getToolParams("cellranger").mkfastq.csv),
-        file(params.getToolParams("cellranger").mkfastq.runFolder),
-        file(params.getToolParams("cellranger").count.transcriptome),
-        file(params.getToolParams("cellranger").count.featureRef)
+        file(params.tools.cellranger.mkfastq.csv),
+        file(params.tools.cellranger.mkfastq.runFolder),
+        file(params.tools.cellranger.count.transcriptome),
+        file(params.tools.cellranger.count.featureRef)
     )
 
     emit:
@@ -790,8 +790,8 @@ workflow cellranger_count_metadata {
     } from './src/cellranger/workflows/cellRangerCountWithMetadata' params(params)
 
     CELLRANGER_COUNT_WITH_METADATA(
-        file(params.getToolParams("cellranger").count.transcriptome),
-        file(params.getToolParams("cellranger").count.metadata)
+        file(params.tools.cellranger.count.transcriptome),
+        file(params.tools.cellranger.count.metadata)
     )
     emit:
         CELLRANGER_COUNT_WITH_METADATA.out
@@ -815,9 +815,9 @@ workflow cellranger_count_libraries {
     } from './src/cellranger/workflows/cellRangerCountWithLibraries' params(params)
 
     CELLRANGER_COUNT_WITH_LIBRARIES(
-        file(params.getToolParams("cellranger").count.transcriptome),
-        file(params.getToolParams("cellranger").count.featureRef),
-        params.getToolParams("cellranger").count.libraries
+        file(params.tools.cellranger.count.transcriptome),
+        file(params.tools.cellranger.count.featureRef),
+        params.tools.cellranger.count.libraries
     )
 
     emit:
@@ -833,9 +833,9 @@ workflow cellranger_count_demuxlet {
     include {
         SC__CELLRANGER__COUNT as CELLRANGER_COUNT;
     } from './src/cellranger/processes/count'
-    if (params.getToolParams("cellranger").count.fastqs instanceof Map) {
+    if (params.tools.cellranger.count.fastqs instanceof Map) {
         // Remove default key
-        Channel.from(params.getToolParams("cellranger").count.fastqs.findAll {
+        Channel.from(params.tools.cellranger.count.fastqs.findAll {
             it.key != 'default' 
         }.collect { k, v -> 
             // Split possible multiple file paths
@@ -854,7 +854,7 @@ workflow cellranger_count_demuxlet {
         .set { fastq_data }           
     }
     data = CELLRANGER_COUNT(
-        params.getToolParams("cellranger").count.transcriptome,
+        params.tools.cellranger.count.transcriptome,
         fastq_data
     )
     cellranger_output_to_bam_barcodes(data) |
@@ -1041,7 +1041,7 @@ workflow sra_cellranger_bbknn {
         DOWNLOAD_FROM_SRA( getSRAChannel( params.data.sra ) )
         SC__CELLRANGER__PREPARE_FOLDER( DOWNLOAD_FROM_SRA.out.groupTuple() )
         SC__CELLRANGER__COUNT(
-            file(params.getToolParams("cellranger").count.transcriptome),
+            file(params.tools.cellranger.count.transcriptome),
             SC__CELLRANGER__PREPARE_FOLDER.out
         )
         BBKNN( 
@@ -1141,7 +1141,7 @@ workflow _cell_annotate_filter {
         getDataChannel | \
             SC__FILE_CONVERTER
 
-        if(!params.hasUtilsParams("cell_annotate"))
+        if(!params.utils?.cell_annotate)
             throw new Exception("VSN ERROR: The cell_annotate param is missing in params.utils.")
 
         // Annotate & publish
@@ -1149,7 +1149,7 @@ workflow _cell_annotate_filter {
             SC__FILE_CONVERTER.out, 
             null,
         )
-        if(params.getUtilsParams("cell_annotate").containsKey("publish") && params.getUtilsParams("cell_annotate").publish) {
+        if(params.utils.cell_annotate.containsKey("publish") && params.utils.cell_annotate.publish) {
             PUBLISH_H5AD_CELL_ANNOTATED(
                 ANNOTATE_BY_CELL_METADATA.out,
                 "ANNOTATE_BY_CELL_METADATA",
@@ -1159,7 +1159,7 @@ workflow _cell_annotate_filter {
             )
         }
 
-        if(!params.hasUtilsParams("cell_filter"))
+        if(!params.utils?.cell_filter)
             throw new Exception("VSN ERROR: The cell_filter param is missing in params.utils.")
 
         // Filter (& clean) & publish
@@ -1168,7 +1168,7 @@ workflow _cell_annotate_filter {
             null
         )
 
-        if(params.getUtilsParams("cell_filter")?.publish) {
+        if(params.utils.cell_filter?.publish) {
             PUBLISH_H5AD_CELL_FILTERED(
                 FILTER_BY_CELL_METADATA.out,
                 "FILTER_BY_CELL_METADATA",
@@ -1177,7 +1177,7 @@ workflow _cell_annotate_filter {
                 false
             )
         }
-        if(params.hasUtilsParams("publish") && publish) {
+        if(params.utils?.publish && publish) {
             PUBLISH_H5AD_CELL_FILTERED(
                 FILTER_BY_CELL_METADATA.out,
                 "CELL_ANNOTATE_FILTER",
@@ -1211,15 +1211,15 @@ workflow cell_annotate_filter_and_sample_annotate {
         out = _cell_annotate_filter(false)
 
         // Annotate cells based on an indexed sample-based metadata table
-        if(!params.hasUtilsParams("sample_annotate"))
+        if(!params.utils?.sample_annotate)
             throw new Exception("VSN ERROR: The sample_annotate param is missing in params.utils.")
 
-        if (!hasMetadataFilePath(params.getUtilsParams("sample_annotate"))) {
+        if (!hasMetadataFilePath(params.utils.sample_annotate)) {
             throw new Exception("VSN ERROR: The metadataFilePath param is missing in sample_annotate.")
         }
         out = SC__ANNOTATE_BY_SAMPLE_METADATA( out )
 
-        if(params.getUtilsParams("file_cleaner")) {
+        if(params.utils.file_cleaner) {
             out = SC__H5AD_BEAUTIFY( out )
         }
 
