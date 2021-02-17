@@ -4,7 +4,7 @@ binDir = !params.containsKey("test") ? "${workflow.projectDir}/src/popscle/bin/"
 
 process SC__POPSCLE__DSC_PILEUP {
 
-    container params.tools.popscle.container
+    container params.getToolParams("popscle").container
     publishDir "${params.global.outdir}/data/intermediate", mode: 'symlink'
     label 'compute_resources__cpu'
 
@@ -26,7 +26,7 @@ process SC__POPSCLE__DSC_PILEUP {
 
 process SC__POPSCLE__PREFILTER_DSC_PILEUP {
 
-    container params.tools.popscle.container
+    container params.getToolParams("popscle").container
     publishDir "${params.global.outdir}/data/intermediate", mode: 'symlink'
     label 'compute_resources__cpu'
 

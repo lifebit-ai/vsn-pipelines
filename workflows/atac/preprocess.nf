@@ -55,7 +55,7 @@ workflow ATAC_PREPROCESS_WITH_METADATA {
         /* Barcode correction */
         // gather barcode whitelists from params into a channel:
         wl = Channel.empty()
-        params.tools.singlecelltoolkit.barcode_correction.whitelist.each { k, v ->
+        params.getToolParams("singlecelltoolkit").barcode_correction.whitelist.each { k, v ->
             if(v != '') {
                 wl = wl.mix( Channel.of(tuple(k, file(v)) ))
             }
