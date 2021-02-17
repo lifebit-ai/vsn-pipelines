@@ -4,6 +4,7 @@ nextflow.enable.dsl=2
 //  Process imports:
 include {
     isParamNull;
+    getToolParams;
 } from './../processes/utils.nf' params(params)
 include {
     SC__PREPARE_OBS_FILTER;
